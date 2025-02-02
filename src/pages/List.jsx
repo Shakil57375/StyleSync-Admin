@@ -5,14 +5,14 @@ export default function ListItems() {
       name: "Kid Tapered Slim Fit Trouser",
       category: "Kids",
       price: 38,
-      image: "/placeholder.svg?height=80&width=80",
+      image: "https://scotch-soda.com.au/cdn/shop/files/2344176833-0002-FNT.jpg?v=1709014539&width=1000",
     },
     {
       id: 2,
       name: "Men Round Neck Pure Cotton T-shirt",
       category: "Men",
       price: 64,
-      image: "/placeholder.svg?height=80&width=80",
+      image: "https://levin.com.bd/cdn/shop/products/2_92452928-2ecd-4493-9ac0-fe5ddb581702.jpg?v=1658226564&width=2048",
     },
     // Add more products as needed
   ]

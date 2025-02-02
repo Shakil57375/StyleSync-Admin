@@ -1,11 +1,17 @@
-import { Link, useLocation } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
-  const location = useLocation()
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = (path) => {
-    return location.pathname === path ? "bg-pink-50" : ""
-  }
+    return location.pathname === path ? "bg-pink-50" : "";
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Clear token
+    navigate("/login"); // Redirect to login page
+  };
 
   return (
     <div className="flex flex-col h-full border-r">
@@ -39,7 +45,16 @@ export default function Navbar() {
           </li>
         </ul>
       </nav>
-    </div>
-  )
-}
 
+      {/* Logout Button */}
+      <div className="p-4 border-t">
+        <button
+          onClick={handleLogout}
+          className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+        >
+          Logout
+        </button>
+      </div>
+    </div>
+  );
+}
