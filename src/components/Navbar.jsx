@@ -3,7 +3,7 @@ const Navbar = () => {
   return (
     <div>
         <img className="w-[80px]" src={assets.logo} alt="" />
-        <button>Logout</button>
+        <button>Logout</button> 
     </div>
   )
 }
