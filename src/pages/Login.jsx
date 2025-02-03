@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { backendUrl } from "../App";
 import { useState } from "react";
-
+import { toast } from "react-toastify";
 export default function Login() {
   const {
     register,
@@ -11,20 +11,21 @@ export default function Login() {
     formState: { errors, isSubmitting },
   } = useForm();
   const navigate = useNavigate();
-  const [show, setShow] = useState(false)
+  const [show, setShow] = useState(false);
 
   const onSubmit = async (data) => {
     try {
-      console.log("Login attempt with:", data);
-      const email = data?.email
+      const email = data?.email;
       const password = data?.password;
-      const response = await axios.post(`${backendUrl}/api/user/admin`, {email, password});
-      console.log(response)
+      const response = await axios.post(`${backendUrl}/api/user/admin`, {
+        email,
+        password,
+      });
+      console.log(response);
       if (response.data?.token) {
         // Store token in localStorage or sessionStorage
         localStorage.setItem("token", response.data.token);
-        console.log("Login successful!", response.data);
-        
+        toast.success("Login successful", { position: "top-center" } );
         // Redirect to dashboard
         navigate("/add");
       } else {
@@ -36,17 +37,15 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">
-          Admin Panel
-        </h1>
-        
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <div className="min-h-screen flex items-center justify-center bg-white ">
+      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg group">
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">Admin Panel</h1>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6  ">
           <div>
-            <label 
-              htmlFor="email" 
-              className="block text-sm font-medium text-gray-700 mb-1"
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-1 group-hover:text-red-500"
             >
               Email Address
             </label>
@@ -57,8 +56,8 @@ export default function Login() {
                 required: "Email is required",
                 pattern: {
                   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: "Invalid email address"
-                }
+                  message: "Invalid email address",
+                },
               })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black"
               placeholder="your@email.com"
@@ -71,21 +70,21 @@ export default function Login() {
           </div>
 
           <div className="relative">
-            <label 
-              htmlFor="password" 
-              className="block text-sm font-medium text-gray-700 mb-1"
+            <label
+              htmlFor="password"
+              className="block group-hover:text-green-500 text-sm font-medium text-gray-700 mb-1"
             >
               Password
             </label>
             <input
               id="password"
-              type={show ? "text" : "password" }
+              type={show ? "text" : "password"}
               {...register("password", {
                 required: "Password is required",
                 minLength: {
                   value: 6,
-                  message: "Password must be at least 6 characters"
-                }
+                  message: "Password must be at least 6 characters",
+                },
               })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black"
               placeholder="Enter your password"
@@ -96,7 +95,7 @@ export default function Login() {
                 onClick={() => setShow(!show)}
                 className="inline-flex items-center px-2 py-1 text-sm font-medium text-gray-400 hover:text-gray-700 transition-colors"
               >
-                {show? "Hide" : "Show"}
+                {show ? "Hide" : "Show"}
               </button>
             </div>
             {errors.password && (
@@ -105,7 +104,6 @@ export default function Login() {
               </p>
             )}
           </div>
-
           <button
             type="submit"
             disabled={isSubmitting}

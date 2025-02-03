@@ -5,6 +5,7 @@ import ListItems from "./pages/List";
 import Orders from "./pages/Orders";
 import Login from "./pages/Login";
 import PrivateRoute from "./private/PrivateRoute";
+import { ToastContainer } from "react-toastify";
 
 // start watching the tutorial from 8:02 minute
 export const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -30,6 +31,7 @@ export default function App() {
             </Route>
           </Routes>
         </main>
+        <ToastContainer />
       </div>
     </div>
   );

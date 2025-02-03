@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-
+  const token = localStorage.getItem('token');
   const isActive = (path) => {
     return location.pathname === path ? "bg-pink-50" : "";
   };
@@ -47,14 +47,14 @@ export default function Navbar() {
       </nav>
 
       {/* Logout Button */}
-      <div className="p-4 border-t">
+      { token && <div className="p-4 border-t">
         <button
           onClick={handleLogout}
           className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
         >
           Logout
         </button>
-      </div>
+      </div>}
     </div>
   );
 }
