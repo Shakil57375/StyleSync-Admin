@@ -7,7 +7,7 @@ import Login from "./pages/Login";
 import PrivateRoute from "./private/PrivateRoute";
 
 // start watching the tutorial from 8:02 minute
-
+export const backendUrl = import.meta.env.VITE_BACKEND_URL;
 export default function App() {
   return (
     <div className="flex h-screen bg-gray-50">

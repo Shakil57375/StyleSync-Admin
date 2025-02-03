@@ -1,24 +1,39 @@
-import { useForm } from "react-hook-form"
-import { useNavigate } from "react-router-dom"
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { backendUrl } from "../App";
+import { useState } from "react";
 
 export default function Login() {
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm()
-  const navigate = useNavigate()
+  } = useForm();
+  const navigate = useNavigate();
+  const [show, setShow] = useState(false)
 
   const onSubmit = async (data) => {
     try {
-      console.log('Login attempt with:', data)
-      // Add your login logic here
-      // If successful, navigate to dashboard
-      navigate('/dashboard')
+      console.log("Login attempt with:", data);
+      const email = data?.email
+      const password = data?.password;
+      const response = await axios.post(`${backendUrl}/api/user/admin`, {email, password});
+      console.log(response)
+      if (response.data?.token) {
+        // Store token in localStorage or sessionStorage
+        localStorage.setItem("token", response.data.token);
+        console.log("Login successful!", response.data);
+        
+        // Redirect to dashboard
+        navigate("/add");
+      } else {
+        console.error("Invalid response from server:", response.data);
+      }
     } catch (error) {
-      console.error('Login failed:', error)
+      console.error("Login failed:", error.response?.data || error.message);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white">
@@ -55,7 +70,7 @@ export default function Login() {
             )}
           </div>
 
-          <div>
+          <div className="relative">
             <label 
               htmlFor="password" 
               className="block text-sm font-medium text-gray-700 mb-1"
@@ -64,7 +79,7 @@ export default function Login() {
             </label>
             <input
               id="password"
-              type="password"
+              type={show ? "text" : "password" }
               {...register("password", {
                 required: "Password is required",
                 minLength: {
@@ -75,6 +90,15 @@ export default function Login() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black"
               placeholder="Enter your password"
             />
+            <div className="absolute top-7 right-2">
+              <button
+                type="button"
+                onClick={() => setShow(!show)}
+                className="inline-flex items-center px-2 py-1 text-sm font-medium text-gray-400 hover:text-gray-700 transition-colors"
+              >
+                {show? "Hide" : "Show"}
+              </button>
+            </div>
             {errors.password && (
               <p className="mt-1 text-sm text-red-600">
                 {errors.password.message}
@@ -92,5 +116,5 @@ export default function Login() {
         </form>
       </div>
     </div>
-  )
+  );
 }
