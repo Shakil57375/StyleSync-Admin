@@ -1,14 +1,19 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 
+const BACKEND_URL = "http://localhost:5000"
+
 export default function AddItems() {
   const [imageFiles, setImageFiles] = useState(Array(4).fill(null))
   const [imagePreviews, setImagePreviews] = useState(Array(4).fill(null))
   const [sizes, setSizes] = useState([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitMessage, setSubmitMessage] = useState("")
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm()
 
@@ -23,12 +28,10 @@ export default function AddItems() {
   const handleImageUpload = (e, index) => {
     const file = e.target.files[0]
     if (file) {
-      // Update the files array
       const newImageFiles = [...imageFiles]
       newImageFiles[index] = file
       setImageFiles(newImageFiles)
 
-      // Create and set preview URL
       const previewUrl = URL.createObjectURL(file)
       const newImagePreviews = [...imagePreviews]
       newImagePreviews[index] = previewUrl
@@ -36,14 +39,52 @@ export default function AddItems() {
     }
   }
 
-  const onSubmit = (data) => {
-    // Combine form data with images and sizes
-    const formData = {
-      ...data,
-      sizes,
-      images: imageFiles.filter(file => file !== null),
+  const onSubmit = async (data) => {
+    setIsSubmitting(true)
+    setSubmitMessage("")
+
+    const formData = new FormData()
+    formData.append("name", data.productName)
+    formData.append("description", data.description)
+    formData.append("price", data.price)
+    formData.append("category", data.category)
+    formData.append("subCategory", data.subCategory)
+    formData.append("sizes", JSON.stringify(sizes))
+    formData.append("bestseller", data.isBestseller ? "true" : "false")
+    formData.append("latestProduct", "false") // Assuming this is not user-selectable
+
+    imageFiles.forEach((file, index) => {
+      if (file) {
+        formData.append(`image${index + 1}`, file)
+      }
+    })
+
+    try {
+      const token = localStorage.getItem("token")
+      const response = await fetch(`${BACKEND_URL}/api/product/add`, {
+        method: "POST",
+        body: formData,
+        Authorization: `Bearer ${token}`,  // ✅ Include the token
+        // Note: Don't set Content-Type header, let the browser set it for FormData
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setSubmitMessage("Product added successfully!")
+        reset() // Reset the form
+        setImageFiles(Array(4).fill(null))
+        setImagePreviews(Array(4).fill(null))
+        setSizes([])
+      } else {
+        setSubmitMessage("Failed to add product: " + result.message)
+      }
+    } catch (error) {
+      setSubmitMessage("An error occurred while adding the product.")
+      console.error("Error adding product:", error)
+    } finally {
+      setIsSubmitting(false)
     }
-    console.log('Form submitted with data:', formData)
   }
 
   return (
@@ -55,7 +96,7 @@ export default function AddItems() {
           <div
             key={index}
             className="border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:border-pink-500 relative"
-            style={{ height: '200px' }}
+            style={{ height: "200px" }}
           >
             <input
               type="file"
@@ -72,18 +113,8 @@ export default function AddItems() {
               />
             ) : (
               <div className="text-gray-400 flex flex-col items-center">
-                <svg
-                  className="w-8 h-8 mb-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
+                <svg className="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 Upload
               </div>
@@ -101,9 +132,7 @@ export default function AddItems() {
             className="w-full p-2 border rounded-lg focus:outline-none focus:border-pink-500"
             placeholder="Type here"
           />
-          {errors.productName && (
-            <p className="text-red-500 text-sm mt-1">{errors.productName.message}</p>
-          )}
+          {errors.productName && <p className="text-red-500 text-sm mt-1">{errors.productName.message}</p>}
         </div>
 
         <div>
@@ -114,15 +143,13 @@ export default function AddItems() {
             placeholder="Write content here"
             rows="4"
           />
-          {errors.description && (
-            <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
-          )}
+          {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>}
         </div>
 
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="block text-gray-700 mb-2">Product category</label>
-            <select 
+            <select
               {...register("category", { required: "Category is required" })}
               className="w-full p-2 border rounded-lg focus:outline-none focus:border-pink-500"
             >
@@ -131,14 +158,12 @@ export default function AddItems() {
               <option value="women">Women</option>
               <option value="kids">Kids</option>
             </select>
-            {errors.category && (
-              <p className="text-red-500 text-sm mt-1">{errors.category.message}</p>
-            )}
+            {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category.message}</p>}
           </div>
 
           <div>
             <label className="block text-gray-700 mb-2">Sub category</label>
-            <select 
+            <select
               {...register("subCategory", { required: "Sub category is required" })}
               className="w-full p-2 border rounded-lg focus:outline-none focus:border-pink-500"
             >
@@ -147,25 +172,21 @@ export default function AddItems() {
               <option value="bottomwear">Bottomwear</option>
               <option value="footwear">Footwear</option>
             </select>
-            {errors.subCategory && (
-              <p className="text-red-500 text-sm mt-1">{errors.subCategory.message}</p>
-            )}
+            {errors.subCategory && <p className="text-red-500 text-sm mt-1">{errors.subCategory.message}</p>}
           </div>
 
           <div>
             <label className="block text-gray-700 mb-2">Product Price</label>
             <input
-              {...register("price", { 
+              {...register("price", {
                 required: "Price is required",
-                min: { value: 0, message: "Price must be positive" }
+                min: { value: 0, message: "Price must be positive" },
               })}
               type="number"
               className="w-full p-2 border rounded-lg focus:outline-none focus:border-pink-500"
               placeholder="25"
             />
-            {errors.price && (
-              <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>
-            )}
+            {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>}
           </div>
         </div>
 
@@ -185,29 +206,31 @@ export default function AddItems() {
               </button>
             ))}
           </div>
-          {sizes.length === 0 && (
-            <p className="text-red-500 text-sm mt-1">Please select at least one size</p>
-          )}
+          {sizes.length === 0 && <p className="text-red-500 text-sm mt-1">Please select at least one size</p>}
         </div>
 
         <div className="flex items-center">
-          <input 
-            type="checkbox" 
-            id="bestseller" 
-            {...register("isBestseller")}
-            className="mr-2" 
-          />
+          <input type="checkbox" id="bestseller" {...register("isBestseller")} className="mr-2" />
           <label htmlFor="bestseller">Add to bestseller</label>
         </div>
 
-        <button 
+        {submitMessage && (
+          <div
+            className={`p-2 rounded ${submitMessage.includes("successfully") ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+          >
+            {submitMessage}
+          </div>
+        )}
+
+        <button
           type="submit"
           className="bg-black text-white px-8 py-2 rounded-lg hover:bg-gray-800 disabled:bg-gray-400"
-          disabled={sizes.length === 0}
+          disabled={isSubmitting || sizes.length === 0}
         >
-          ADD
+          {isSubmitting ? "Adding..." : "ADD"}
         </button>
       </div>
     </form>
   )
 }
+

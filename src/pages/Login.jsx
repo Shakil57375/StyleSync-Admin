@@ -21,7 +21,6 @@ export default function Login() {
         email,
         password,
       });
-      console.log(response);
       if (response.data?.token) {
         // Store token in localStorage or sessionStorage
         localStorage.setItem("token", response.data.token);
